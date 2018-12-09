@@ -1,13 +1,17 @@
+import Ml from "./ml";
 const express = require('express')
 const router = express.Router()
 
 let app = express()
 
+let ml = new Ml()
+
 app.get('/api/', (req, res) => {
-    res.writeHead(200, '', {
-        'Content-Type': 'application/json'
+    ml.getPrediction().then((result) => {
+        res.send(result.toString())
+    }, (err) => {
+        console.log(err)
     })
-    res.end()
 })
 
 app.listen(3005)
