@@ -1,25 +1,40 @@
 import * as tf from '@tensorflow/tfjs'
 import '@tensorflow/tfjs-node'
+import * as path from 'path'
+import * as fs from 'fs'
+
+require('dotenv').load()
 
 class Ml {
     constructor() {
         this.compileModel()
-        this.startTraining()
     }
 
-    compileModel = () => {
-        this.model = tf.sequential()
+    compileModel = async () => {
+        let modelJsonPath = path.join(process.env.HOME, process.env.ML_DATA_DIRECTORY, 'mySavedModel', 'model.json')
 
-        this.model.add(tf.layers.dense({
-            inputShape: [3],
-            units: 10,
-            activation: 'sigmoid'
-        }))
+        if (fs.existsSync(modelJsonPath)) {
+            this.model = await tf.loadModel('file://' + modelJsonPath)
+        }
+        else {
+            this.model = tf.sequential()
 
-        this.model.add(tf.layers.dense({
-            units: 3,
-            activation: 'sigmoid'
-        }))
+            this.model.add(tf.layers.dense({
+                inputShape: [3],
+                units: 3,
+                activation: 'tanh'
+            }))
+
+            this.model.add(tf.layers.dense({
+                units: 3,
+                activation: 'tanh'
+            }))
+
+            this.model.add(tf.layers.dense({
+                units: 3,
+                activation: 'tanh'
+            }))
+        }
 
         this.model.compile({
             loss: 'meanSquaredError',
@@ -30,22 +45,14 @@ class Ml {
     startTraining = () => {
         const [xs, ys] = this.getTrainingData()
 
-        // let loss = 1
-        // while (loss > 0.1) {
         this.model.fit(xs, ys, {
             batchSize: 1,
-            epochs: 4,
+            epochs: 5000,
         }).then(history => {
-            this.model.save('file:///./tmp/mySavedModel')
-            if (history.history.loss[3999] > 0.1) {
-                // this.startTraining()
-            }
+            this.model.save('file://' + path.join(process.env.HOME, process.env.ML_DATA_DIRECTORY, 'mySavedModel')).then(res => {
+                console.log('model saved')
+            })
         })
-        // a.then(history => {
-        //     let lossArr = history.history.loss
-        //     loss = lossArr[lossArr.length - 1]
-        // })
-        // }
     }
 
     getTrainingData = () => {
@@ -59,7 +66,7 @@ class Ml {
 
         let results = this.model.predict(xs)
 
-        return results
+        return tf.round(results)
     }
 }
 
