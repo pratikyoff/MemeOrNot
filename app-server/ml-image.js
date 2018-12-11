@@ -14,11 +14,11 @@ class MlImage {
      *@param {boolean} [isAMeme=true]
      *
      */
-    trainWithUrl = (imageUrl, isAMeme) => {
+    trainWithUrl(imageUrl, isAMeme) {
         if (!imageUrl)
             throw new Error('imageUrl is empty')
 
-        
+
     }
 }
 

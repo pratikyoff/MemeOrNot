@@ -2,15 +2,21 @@ import * as tf from '@tensorflow/tfjs'
 import '@tensorflow/tfjs-node'
 import * as path from 'path'
 import * as fs from 'fs'
+import ImageStore from './image-cache';
 
 require('dotenv').load()
 
 class Ml {
     constructor() {
         this.compileModel()
+        let imgStore = new ImageStore()
+        const filePath = imgStore.getImageCanvasFromUrl('https://image.freepik.com/free-icon/jpg-file-format-variant_318-45505.jpg')
+        filePath.then(image => {
+            tf.fromPixels(image).print()
+        })
     }
 
-    compileModel = async () => {
+    async compileModel() {
         let modelJsonPath = path.join(process.env.HOME, process.env.ML_DATA_DIRECTORY, 'mySavedModel', 'model.json')
 
         if (fs.existsSync(modelJsonPath)) {
@@ -42,7 +48,7 @@ class Ml {
         })
     }
 
-    startTraining = () => {
+    startTraining() {
         const [xs, ys] = this.getTrainingData()
 
         this.model.fit(xs, ys, {
@@ -55,13 +61,13 @@ class Ml {
         })
     }
 
-    getTrainingData = () => {
+    getTrainingData() {
         let xTensor = tf.tensor2d([[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]])
         let yTensor = tf.tensor2d([[0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1], [0, 0, 0]])
         return [xTensor, yTensor]
     }
 
-    getPrediction = async () => {
+    async getPrediction() {
         const [xs, ys] = this.getTrainingData()
 
         let results = this.model.predict(xs)

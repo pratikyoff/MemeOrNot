@@ -18,8 +18,11 @@
   },
   "dependencies": {
     "@tensorflow/tfjs-node": "^0.1.21",
+    "canvas": "^2.2.0",
     "dotenv": "^6.2.0",
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "image-downloader": "^3.4.2",
+    "node-persist": "^3.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
