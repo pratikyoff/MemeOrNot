@@ -1,13 +1,15 @@
-import * as fs from 'fs'
 import * as path from 'path'
 import * as download from 'image-downloader'
 import { loadImage, createCanvas } from 'canvas';
 import * as kvStore from 'node-persist'
+import * as util from './utils'
+import * as tf from '@tensorflow/tfjs'
+import '@tensorflow/tfjs-node'
 
 class ImageStore {
     constructor() {
         this.initializeDirectories();
-        kvStore.initSync({
+        kvStore.init({
             dir: path.join(process.env.HOME, process.env.ML_DATA_DIRECTORY, process.env.RESULT_DATA_DIRECTORY),
             ttl: false,
             logging: console.log,
@@ -19,9 +21,9 @@ class ImageStore {
         this.dataDirPath = path.join(process.env.HOME, process.env.ML_DATA_DIRECTORY);
         this.downloadedImagesFolder = path.join(this.dataDirPath, process.env.ORIGINAL_IMAGE_FOLDER);
         this.correctedImagesFolder = path.join(this.dataDirPath, process.env.COMPRESSED_IMAGE_FOLDER);
-        createDirectoryIfNotExist(this.dataDirPath);
-        createDirectoryIfNotExist(this.downloadedImagesFolder);
-        createDirectoryIfNotExist(this.correctedImagesFolder);
+        util.createDirectoryIfNotExist(this.dataDirPath);
+        util.createDirectoryIfNotExist(this.downloadedImagesFolder);
+        util.createDirectoryIfNotExist(this.correctedImagesFolder);
     }
 
     /**
@@ -34,16 +36,21 @@ class ImageStore {
             dest: this.downloadedImagesFolder
         })
 
-        const canvas = await this.getCanvasFromImage(filename);
+        const canvas = await this.getCanvasFromImagePath(filename);
 
         return canvas
+    }
+
+    async saveImageFromTensor(imageTensor) {
+        const imgSavePath = path.join(this.dataDirPath, 'producedImages')
+        const canvas = await tf.toPixels(imageTensor)
     }
 
     /**
      * Creates a canvas object from an image
      * @param {string} filepath
      */
-    async getCanvasFromImage(filepath) {
+    async getCanvasFromImagePath(filepath) {
         const image = await loadImage(filepath);
         const canvas = createCanvas(image.width, image.height);
         const context = canvas.getContext('2d');
@@ -58,7 +65,7 @@ class ImageStore {
      */
     async getCorrectedImage(imageName) {
         const filepath = path.join(this.correctedImagesFolder, imageName)
-        return await this.getCanvasFromImage(filepath)
+        return await this.getCanvasFromImagePath(filepath)
     }
 
     /**
@@ -67,7 +74,7 @@ class ImageStore {
      */
     async getDownloadedImage(imageName) {
         const filepath = path.join(this.downloadedImagesFolder, imageName)
-        return await this.getCanvasFromImage(filepath)
+        return await this.getCanvasFromImagePath(filepath)
     }
 
     /**
@@ -85,11 +92,6 @@ class ImageStore {
     isImageAMeme(filename) {
         return kvStore.getItemSync(filename)
     }
-}
-
-function createDirectoryIfNotExist(dataDirPath) {
-    if (!fs.existsSync(dataDirPath))
-        fs.mkdirSync(dataDirPath);
 }
 
 export default ImageStore

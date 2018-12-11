@@ -2,7 +2,7 @@ import * as tf from '@tensorflow/tfjs'
 import '@tensorflow/tfjs-node'
 import * as path from 'path'
 import * as fs from 'fs'
-import ImageStore from './image-cache';
+import ImageStore from './image-store';
 
 require('dotenv').load()
 
@@ -10,10 +10,14 @@ class Ml {
     constructor() {
         this.compileModel()
         let imgStore = new ImageStore()
-        const filePath = imgStore.getImageCanvasFromUrl('https://image.freepik.com/free-icon/jpg-file-format-variant_318-45505.jpg')
-        filePath.then(image => {
-            tf.fromPixels(image).print()
-        })
+        this.trySaveImage(imgStore)
+    }
+
+    async trySaveImage(imgStore) {
+        const canvasImgO = await imgStore.getDownloadedImage('jpg-file-format-variant_318-45505.jpg')
+        let tensorImage = tf.fromPixels(canvasImgO, 3)
+        //console.log(tensorImage)
+        imgStore.saveImageFromTensor(tensorImage)
     }
 
     async compileModel() {
