@@ -9,15 +9,6 @@ require('dotenv').load()
 class Ml {
     constructor() {
         this.compileModel()
-        let imgStore = new ImageStore()
-        this.trySaveImage(imgStore)
-    }
-
-    async trySaveImage(imgStore) {
-        const canvasImgO = await imgStore.getDownloadedImage('jpg-file-format-variant_318-45505.jpg')
-        let tensorImage = tf.fromPixels(canvasImgO, 3)
-        //console.log(tensorImage)
-        imgStore.saveImageFromTensor(tensorImage)
     }
 
     async compileModel() {

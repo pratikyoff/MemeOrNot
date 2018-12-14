@@ -22,7 +22,8 @@
     "dotenv": "^6.2.0",
     "express": "^4.16.4",
     "image-downloader": "^3.4.2",
-    "node-persist": "^3.0.1"
+    "node-persist": "^3.0.1",
+    "pngjs2": "^2.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

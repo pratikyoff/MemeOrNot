@@ -3,8 +3,10 @@ import * as download from 'image-downloader'
 import { loadImage, createCanvas } from 'canvas';
 import * as kvStore from 'node-persist'
 import * as util from './utils'
+import * as fs from 'fs'
 import * as tf from '@tensorflow/tfjs'
 import '@tensorflow/tfjs-node'
+import { PNG } from "pngjs2";
 
 class ImageStore {
     constructor() {
@@ -41,9 +43,19 @@ class ImageStore {
         return canvas
     }
 
-    async saveImageFromTensor(imageTensor) {
+    /**
+     * @param {tf.Tensor} imageTensor
+     * @param {string} newFileName
+     */
+    async saveImageFromTensor(imageTensor, newFileName) {
         const imgSavePath = path.join(this.dataDirPath, 'producedImages')
-        const canvas = await tf.toPixels(imageTensor)
+        util.createDirectoryIfNotExist(imgSavePath)
+        const uint8ClampedArray = await tf.toPixels(imageTensor)
+        let buffer = Buffer.from(uint8ClampedArray)
+        let filePath = path.join(imgSavePath, newFileName + '.png' || 'newFile.png')
+        let img_png = new PNG({ width: imageTensor.shape[1], height: imageTensor.shape[0] })
+        img_png.data = buffer
+        img_png.pack().pipe(fs.createWriteStream(filePath))
     }
 
     /**
